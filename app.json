@@ -38,6 +38,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "d2a8aa53-7531-4d56-ae8d-07c06f1ea5fd"
+      }
+    },
+    "owner": "rohitydv09"
   }
 }
