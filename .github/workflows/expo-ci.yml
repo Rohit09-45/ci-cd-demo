@@ -1,0 +1,44 @@
+name: Expo CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      
+      - name: Install Dependencies
+        run: npm install
+      
+      - name: Login to Expo
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: expo login --non-interactive --token $EXPO_TOKEN
+      
+      - name: Build Expo Project
+        run: expo prebuild
+      
+      - name: Run Tests
+        run: npm test
+      
+      - name: Publish to Expo
+        run: expo publish
+
+      - name: Build for Android
+        run: expo build:android --no-interactive
+      
+      - name: Build for iOS
+        run: expo build:ios --no-interactive
