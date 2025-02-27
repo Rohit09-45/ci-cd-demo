@@ -2,121 +2,39 @@ name: Expo CI/CD
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
-  test-and-build:
-    name: Test and build app
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: 🏗 Setup repository
-        uses: actions/checkout@v4
+      - name: 🏗 Checkout Repository
+        uses: actions/checkout@v3
 
-      - name: 🏗 Setup Node
-        uses: actions/setup-node@v4
+      - name: 🏗 Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version: 18.x
-          cache: yarn
+          node-version: 18
+          cache: 'npm'
 
-      - name: 📦 Install dependencies
-        run: yarn install --frozen-lockfile
+      - name: 📦 Install Dependencies
+        run: npm install
 
-      - name: 🧪 Run tests
-        run: yarn test
+      - name: 🧪 Run Tests
+        run: npm run test:ci
 
-      - name: 🏗 Setup Expo
+      - name: 🚀 Setup Expo
         uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: 📱 Setup EAS local build
-        run: npm install -g eas-cli
+      - name: 🔧 Initialize EAS project
+        run: eas init --non-interactive --force
 
-      - name: 🔑 Setup Android Keystore
-        run: |
-          mkdir -p android/app
-          echo "${{ secrets.EXPO_ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
-
-      - name: 📝 Update eas.json for local credentials
-        run: |
-          cat > eas.json << EOL
-          {
-            "build": {
-              "production": {
-                "android": {
-                  "buildType": "app-bundle",
-                  "credentialsSource": "local"
-                }
-              }
-            }
-          }
-          EOL
-
-      - name: 🚀 Build Android
-        run: eas build --platform android --non-interactive --profile production --local
-        env:
-          EXPO_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.EXPO_ANDROID_KEYSTORE_PASSWORD }}
-          EXPO_ANDROID_KEY_ALIAS: ${{ secrets.EXPO_ANDROID_KEY_ALIAS }}
-          EXPO_ANDROID_KEY_PASSWORD: ${{ secrets.EXPO_ANDROID_KEY_PASSWORD }}
-
-      - name: 📂 List build artifacts location
-        run: |
-          find . -name "*.apk" -o -name "*.aab"
-          mkdir -p ./artifacts
-
-      - name: 📂 Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-android
-          path: |
-            build/android/*.aab
-            build/android/*.apk
-          retention-days: 5
-
-      # Uncomment the below section if you want to build for iOS as well
-      # - name: 🚀 Build iOS
-      #   run: eas build --platform ios --non-interactive --profile production --local
-      #   env:
-      #     EXPO_APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.EXPO_APPLE_APP_SPECIFIC_PASSWORD }}
-
-      # - name: 📂 Upload iOS build artifacts
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: app-ios
-      #     path: build/ios/*.ipa
-
-  # Uncomment the below job if you want to add automatic submission to stores
-  # deploy:
-  #   name: Deploy app
-  #   needs: test-and-build
-  #   runs-on: ubuntu-latest
-  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-  #   steps:
-  #     - name: 🏗 Setup repository
-  #       uses: actions/checkout@v3
-  #
-  #     - name: 🏗 Setup Node
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 18.x
-  #
-  #     - name: 📦 Install dependencies
-  #       run: yarn install --frozen-lockfile
-  #
-  #     - name: 🏗 Setup Expo
-  #       uses: expo/expo-github-action@v8
-  #       with:
-  #         eas-version: latest
-  #         token: ${{ secrets.EXPO_TOKEN }}
-  #
-  #     - name: 📱 Setup EAS Submit
-  #       run: npm install -g eas-cli
-  #
-  #     - name: 📲 Submit to Google Play
-  #       run: eas submit -p android --non-interactive
-  #
-  #     # - name: 📲 Submit to App Store
-  #     #   run: eas submit -p ios --non-interactive
+      # - name: 📱 Build and submit
+      #   run: eas build --platform all --non-interactive
