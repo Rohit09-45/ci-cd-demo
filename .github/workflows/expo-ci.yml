@@ -36,5 +36,5 @@ jobs:
       - name: 🔧 Initialize EAS project
         run: eas init --non-interactive --force
 
-      # - name: 📱 Build and submit
-      #   run: eas build --platform all --non-interactive
+      - name: 📦 Build for Android
+        run: eas build --platform android --non-interactive
