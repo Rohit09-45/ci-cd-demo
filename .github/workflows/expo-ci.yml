@@ -12,10 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 🏗 Setup repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: 🏗 Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18.x
           cache: yarn
@@ -62,13 +62,19 @@ jobs:
           EXPO_ANDROID_KEY_ALIAS: ${{ secrets.EXPO_ANDROID_KEY_ALIAS }}
           EXPO_ANDROID_KEY_PASSWORD: ${{ secrets.EXPO_ANDROID_KEY_PASSWORD }}
 
+      - name: 📂 List build artifacts location
+        run: |
+          find . -name "*.apk" -o -name "*.aab"
+          mkdir -p ./artifacts
+
       - name: 📂 Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: app-android
           path: |
             build/android/*.aab
             build/android/*.apk
+          retention-days: 5
 
       # Uncomment the below section if you want to build for iOS as well
       # - name: 🚀 Build iOS
